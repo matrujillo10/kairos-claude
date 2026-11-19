@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "kairos": {
+      "type": "http",
+      "url": "https://api.v2.kairos.sg-sst.io/mcp"
+    }
+  }
+}

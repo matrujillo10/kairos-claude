@@ -1,0 +1,14 @@
+{
+  "name": "kairos",
+  "owner": {
+    "name": "Inci"
+  },
+  "description": "Kairos en Claude, de Inci.",
+  "plugins": [
+    {
+      "name": "kairos",
+      "source": "./plugins/kairos",
+      "description": "Kairos, el SG-SST de su empresa, dentro de Claude con su cuenta de Kairos."
+    }
+  ]
+}
