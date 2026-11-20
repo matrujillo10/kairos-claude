@@ -10,17 +10,18 @@ módulo viven en Kairos y salen siempre al día por `leer_guia`; esta skill solo
 
 ## Por dónde empezar
 
-1. `empresas`: las empresas en que la cuenta trabaja. Un aliado ve su cartera por páginas; pida la siguiente
-   mientras `total` sea mayor que lo visto.
+1. `empresas`: las empresas en que la cuenta trabaja. Un aliado ve su cartera por páginas, y el personal de Inci,
+   todas las de Kairos; `texto` busca por nombre o NIT. Pida la siguiente página mientras `total` sea mayor que lo visto.
 2. `leer_guia` sin módulo: el índice. Antes de consultar o cambiar un módulo, lea su guía: trae sus consultas con
-   la ruta, sus comandos con el cuerpo y lo legal.
-3. `consultar`: varias consultas de la guía en un solo llamado.
+   la ruta, sus comandos en una línea y lo legal; `seccion` trae solo una parte y `operacion`, el cuerpo de un comando.
+3. `consultar`: varias consultas de la guía en un solo llamado; `campos` trae solo las llaves que necesita.
 
 ## Reglas
 
 - Lo que Kairos calcula (puntaje, semáforo, pendientes, estado de una acción) se lee, nunca se recalcula.
-- `accion` hace comandos que agregan o pesan, en orden, y para en el primero que falla: lea `hechas` y el
-  `rechazo` antes de seguir.
+- `accion` hace comandos que agregan o son de peso, en orden, y para en el primero que falla: lea `hechas` y el
+  `rechazo` antes de seguir. Lo de peso (retirar, anular, corregir lo confirmado): diga antes qué cambia y espere su visto bueno.
+- Cada respuesta trae `empresas` (slug y razón social): verifique que opera en la empresa que la persona quiere.
 - Lo legal (calificar, firmar, sellar, confirmar) va por `acto_legal`, un acto por llamada: la persona lo aprueba
   en su cliente de Claude. Diga antes qué se va a firmar y con qué efecto.
 - Muchas filas (una matriz, un plan, un listado de personas): `subir_archivo` y `importar`, nunca fila por fila.

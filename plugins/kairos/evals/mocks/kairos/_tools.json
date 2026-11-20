@@ -74,7 +74,7 @@
             "type": "integer"
           },
           "de_aliado": {
-            "description": "La cuenta es de un aliado y estas son las empresas de su cartera.",
+            "description": "De un aliado: las de su cartera; del personal de Inci, todas las de Kairos.",
             "title": "De Aliado",
             "type": "boolean"
           }
@@ -96,8 +96,19 @@
     },
     {
       "name": "leer_guia",
-      "description": "La guía de un módulo: qué se hace, lo legal, sus consultas con su ruta y sus comandos.",
+      "description": "La guía de un módulo (qué se hace, lo legal, consultas y comandos) o el cuerpo de uno de sus comandos.",
       "inputSchema": {
+        "$defs": {
+          "SeccionDeLaGuia": {
+            "enum": [
+              "intencion",
+              "consultas",
+              "comandos"
+            ],
+            "title": "SeccionDeLaGuia",
+            "type": "string"
+          }
+        },
         "properties": {
           "modulo": {
             "anyOf": [
@@ -111,22 +122,58 @@
             "default": null,
             "description": "Módulo del índice; sin él, solo el índice.",
             "title": "Modulo"
+          },
+          "seccion": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/SeccionDeLaGuia"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Solo esa parte de la guía."
+          },
+          "operacion": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "operationId: el cuerpo de ese comando.",
+            "title": "Operacion"
           }
         },
         "title": "leer_guiaArguments",
         "type": "object"
       },
       "outputSchema": {
+        "$defs": {
+          "JsonValue": {}
+        },
         "additionalProperties": false,
-        "description": "Siempre el índice; con `modulo`, también su guía: intención, lo legal, consultas y comandos.",
+        "description": "Sin `modulo`, el índice; con él, su guía o una sección; con `operacion`, el cuerpo de ese comando.",
         "properties": {
           "indice": {
-            "additionalProperties": {
-              "type": "string"
-            },
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
             "description": "Módulo → título de su guía; `leer_guia` recibe el módulo.",
-            "title": "Indice",
-            "type": "object"
+            "title": "Indice"
           },
           "modulo": {
             "anyOf": [
@@ -151,11 +198,30 @@
             ],
             "default": null,
             "title": "Texto"
+          },
+          "operacion": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Operacion"
+          },
+          "cuerpo": {
+            "$ref": "#/$defs/JsonValue",
+            "default": null,
+            "description": "JSON Schema del cuerpo; multipart lleva `carga:<id>`."
+          },
+          "multipart": {
+            "default": false,
+            "title": "Multipart",
+            "type": "boolean"
           }
         },
-        "required": [
-          "indice"
-        ],
         "title": "Guias",
         "type": "object"
       },
@@ -197,6 +263,25 @@
                 },
                 "title": "Parametros",
                 "type": "object"
+              },
+              "campos": {
+                "anyOf": [
+                  {
+                    "items": {
+                      "maxLength": 120,
+                      "pattern": "^[a-z_][a-z0-9_]*(\\.[a-z_][a-z0-9_]*)*$",
+                      "type": "string"
+                    },
+                    "maxItems": 20,
+                    "type": "array"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "Solo estas llaves del cuerpo, con punto para entrar: `autoevaluacion.puntaje`, `pendientes`.",
+                "title": "Campos"
               }
             },
             "required": [
@@ -226,6 +311,26 @@
       },
       "outputSchema": {
         "$defs": {
+          "EmpresaDeLaCuenta": {
+            "additionalProperties": false,
+            "properties": {
+              "slug": {
+                "description": "Nombre corto de la empresa: va en `empresa` de `consultar`.",
+                "title": "Slug",
+                "type": "string"
+              },
+              "razon_social": {
+                "title": "Razon Social",
+                "type": "string"
+              }
+            },
+            "required": [
+              "slug",
+              "razon_social"
+            ],
+            "title": "EmpresaDeLaCuenta",
+            "type": "object"
+          },
           "JsonValue": {},
           "PedidoRechazado": {
             "description": "Por qué un pedido del lote no llegó a la API.",
@@ -288,6 +393,14 @@
         },
         "additionalProperties": false,
         "properties": {
+          "empresas": {
+            "description": "Cada empresa del pedido con su razón social: verifique que es donde la persona quiere operar.",
+            "items": {
+              "$ref": "#/$defs/EmpresaDeLaCuenta"
+            },
+            "title": "Empresas",
+            "type": "array"
+          },
           "resultados": {
             "description": "Uno por pedido, en el mismo orden.",
             "items": {
@@ -298,6 +411,7 @@
           }
         },
         "required": [
+          "empresas",
           "resultados"
         ],
         "title": "ResultadosDelLote",
@@ -311,7 +425,7 @@
     },
     {
       "name": "accion",
-      "description": "Comandos de la guía que agregan o pesan (no legales), en orden; para en el primero que falla.",
+      "description": "Comandos que agregan o son de peso, en orden; para en el primero que falla. Lo legal va por `acto_legal`.",
       "inputSchema": {
         "$defs": {
           "JsonValue": {},
@@ -387,6 +501,26 @@
       },
       "outputSchema": {
         "$defs": {
+          "EmpresaDeLaCuenta": {
+            "additionalProperties": false,
+            "properties": {
+              "slug": {
+                "description": "Nombre corto de la empresa: va en `empresa` de `consultar`.",
+                "title": "Slug",
+                "type": "string"
+              },
+              "razon_social": {
+                "title": "Razon Social",
+                "type": "string"
+              }
+            },
+            "required": [
+              "slug",
+              "razon_social"
+            ],
+            "title": "EmpresaDeLaCuenta",
+            "type": "object"
+          },
           "JsonValue": {},
           "PedidoRechazado": {
             "description": "Por qué un pedido del lote no llegó a la API.",
@@ -444,6 +578,14 @@
         },
         "additionalProperties": false,
         "properties": {
+          "empresas": {
+            "description": "Cada empresa del pedido con su razón social: verifique que es donde la persona quiere operar.",
+            "items": {
+              "$ref": "#/$defs/EmpresaDeLaCuenta"
+            },
+            "title": "Empresas",
+            "type": "array"
+          },
           "resultados": {
             "description": "Uno por acción, en el mismo orden.",
             "items": {
@@ -459,6 +601,7 @@
           }
         },
         "required": [
+          "empresas",
           "resultados",
           "hechas"
         ],
@@ -544,6 +687,26 @@
       },
       "outputSchema": {
         "$defs": {
+          "EmpresaDeLaCuenta": {
+            "additionalProperties": false,
+            "properties": {
+              "slug": {
+                "description": "Nombre corto de la empresa: va en `empresa` de `consultar`.",
+                "title": "Slug",
+                "type": "string"
+              },
+              "razon_social": {
+                "title": "Razon Social",
+                "type": "string"
+              }
+            },
+            "required": [
+              "slug",
+              "razon_social"
+            ],
+            "title": "EmpresaDeLaCuenta",
+            "type": "object"
+          },
           "JsonValue": {},
           "PedidoRechazado": {
             "description": "Por qué un pedido del lote no llegó a la API.",
@@ -565,7 +728,6 @@
           }
         },
         "additionalProperties": false,
-        "description": "`estado` es el HTTP de la API; una acción que no llegó a ella dice su `rechazo`.",
         "properties": {
           "operacion": {
             "title": "Operacion",
@@ -589,13 +751,22 @@
               }
             ],
             "default": null
+          },
+          "empresas": {
+            "description": "Cada empresa del pedido con su razón social: verifique que es donde la persona quiere operar.",
+            "items": {
+              "$ref": "#/$defs/EmpresaDeLaCuenta"
+            },
+            "title": "Empresas",
+            "type": "array"
           }
         },
         "required": [
           "operacion",
-          "estado"
+          "estado",
+          "empresas"
         ],
-        "title": "ResultadoDeAccion",
+        "title": "ActoLegalHecho",
         "type": "object"
       },
       "annotations": {
@@ -753,14 +924,38 @@
       },
       "outputSchema": {
         "$defs": {
+          "EmpresaDeLaCuenta": {
+            "additionalProperties": false,
+            "properties": {
+              "slug": {
+                "description": "Nombre corto de la empresa: va en `empresa` de `consultar`.",
+                "title": "Slug",
+                "type": "string"
+              },
+              "razon_social": {
+                "title": "Razon Social",
+                "type": "string"
+              }
+            },
+            "required": [
+              "slug",
+              "razon_social"
+            ],
+            "title": "EmpresaDeLaCuenta",
+            "type": "object"
+          },
           "JsonValue": {}
         },
         "additionalProperties": false,
         "description": "`estado` es el HTTP de la API y `cuerpo`, su respuesta; un 4xx trae su código en `cuerpo.detail`.",
         "properties": {
-          "empresa": {
-            "title": "Empresa",
-            "type": "string"
+          "empresas": {
+            "description": "Cada empresa del pedido con su razón social: verifique que es donde la persona quiere operar.",
+            "items": {
+              "$ref": "#/$defs/EmpresaDeLaCuenta"
+            },
+            "title": "Empresas",
+            "type": "array"
           },
           "operacion": {
             "title": "Operacion",
@@ -776,7 +971,7 @@
           }
         },
         "required": [
-          "empresa",
+          "empresas",
           "operacion",
           "estado"
         ],
@@ -829,14 +1024,38 @@
       },
       "outputSchema": {
         "$defs": {
+          "EmpresaDeLaCuenta": {
+            "additionalProperties": false,
+            "properties": {
+              "slug": {
+                "description": "Nombre corto de la empresa: va en `empresa` de `consultar`.",
+                "title": "Slug",
+                "type": "string"
+              },
+              "razon_social": {
+                "title": "Razon Social",
+                "type": "string"
+              }
+            },
+            "required": [
+              "slug",
+              "razon_social"
+            ],
+            "title": "EmpresaDeLaCuenta",
+            "type": "object"
+          },
           "JsonValue": {}
         },
         "additionalProperties": false,
         "description": "`estado` es el HTTP de la API y `cuerpo`, su respuesta; un 4xx trae su código en `cuerpo.detail`.",
         "properties": {
-          "empresa": {
-            "title": "Empresa",
-            "type": "string"
+          "empresas": {
+            "description": "Cada empresa del pedido con su razón social: verifique que es donde la persona quiere operar.",
+            "items": {
+              "$ref": "#/$defs/EmpresaDeLaCuenta"
+            },
+            "title": "Empresas",
+            "type": "array"
           },
           "operacion": {
             "title": "Operacion",
@@ -852,7 +1071,7 @@
           }
         },
         "required": [
-          "empresa",
+          "empresas",
           "operacion",
           "estado"
         ],

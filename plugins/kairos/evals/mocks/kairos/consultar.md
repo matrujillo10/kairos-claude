@@ -2,7 +2,7 @@
 type: agent
 ---
 Usted es el servidor de Kairos para la empresa ficticia (slug `ficticia`). Responda la herramienta `consultar` con el JSON
-`{"resultados": [...]}`, un resultado por pedido y en el mismo orden: `{"empresa", "ruta", "estado", "cuerpo"}`.
+`{"empresas": [{"slug": "ficticia", "razon_social": "Ficticia S.A.S."}], "resultados": [...]}`, un resultado por pedido y en el mismo orden: `{"empresa", "ruta", "estado", "cuerpo"}`.
 
 Datos de la empresa, fijos:
 - Autoevaluación 2026 (`/autoevaluacion` y rutas bajo ella): puntaje 78.5 sobre 100, banda «moderadamente aceptable»,

@@ -3,11 +3,11 @@ type: agent
 ---
 Usted es el servidor de Kairos y responde la herramienta `leer_guia` con JSON `{"indice", "modulo", "texto"}`.
 
-`indice` siempre es este objeto, tal cual:
+`indice`, solo sin `modulo`, es este objeto, tal cual:
 {"accesos": "Accesos: el perfil de la empresa y las cuentas de sus usuarios", "acciones": "Acciones: lo que hay que hacer, quién responde, para cuándo y si sirvió", "autoevaluacion": "Autoevaluación del SG-SST: subir un soporte a un estándar", "cargos": "Cargos y su perfil: armar el borrador desde un documento", "comites": "Comités: conformarlos, designar miembros y subir sus soportes", "documentos de terceros": "Documentos de terceros: lo que entrega cada contratista o proveedor y su revisión", "entrada": "entrada", "epp": "Matriz de EPP y entregas: qué EPP exige cada cargo y a quién se le entregó", "estrategia": "Estrategia: política, objetivos y recursos del SG-SST", "evaluacion de terceros": "Evaluación de terceros: formatos y evaluaciones de proveedores y contratistas", "levantamiento": "Entrevista de riesgos: lo que cada trabajador cuenta de los peligros de su cargo", "matriz-legal": "Matriz legal: normas que aplican, su cumplimiento y su firma", "matriz-peligros": "Matriz de peligros: actividades, riesgos y su valoración con la GTC 45", "personas": "Personas: la ficha de cada trabajador y quién responde legalmente", "plan-de-trabajo": "Plan de trabajo: crear acciones, abrir el año y ver lo que viene", "salud": "Salud: documentos retenidos e incapacidades", "sedes": "Sedes y ARL: los lugares donde trabaja la empresa y su ARL", "tablero": "Resumen de la empresa: qué sigue y qué está pendiente", "terceros": "Terceros: contratistas, proveedores, EST e IPS y sus contratos", "vinculos": "Vínculos: con qué vínculo y en qué cargo trabaja cada persona"}
 
-Sin `modulo`: devuelva solo `{"indice": ...}`. Con un `modulo` del índice que tenga guía abajo: `modulo` y `texto` con
-esa guía, tal cual. Con un `modulo` del índice sin guía abajo: `texto` con su título y la línea «Sin consultas ni comandos
+Sin `modulo`: devuelva solo `{"indice": ...}`. Con un `modulo` del índice que tenga guía abajo: `{"modulo", "texto"}` con
+esa guía, tal cual; con `seccion` (intencion, consultas o comandos), solo esa parte de la guía; con `operacion`, `{"modulo", "operacion", "cuerpo"}` con el cuerpo que la guía da a ese comando. Con un `modulo` del índice sin guía abajo: `texto` con su título y la línea «Sin consultas ni comandos
 para este ejemplo.». Con un `modulo` que no está en el índice: responda solo el error `guia_desconocida`.
 
 <guia modulo="autoevaluacion">
