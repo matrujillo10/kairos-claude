@@ -1,0 +1,869 @@
+{
+  "tools": [
+    {
+      "name": "empresas",
+      "description": "Las empresas en que la cuenta trabaja: la suya, o la cartera de su aliado, por páginas.",
+      "inputSchema": {
+        "properties": {
+          "pagina": {
+            "default": 1,
+            "description": "De la cartera de un aliado.",
+            "maximum": 100000,
+            "minimum": 1,
+            "title": "Pagina",
+            "type": "integer"
+          },
+          "texto": {
+            "anyOf": [
+              {
+                "maxLength": 100,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Nombre o NIT.",
+            "title": "Texto"
+          }
+        },
+        "title": "empresasArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "$defs": {
+          "EmpresaDeLaCuenta": {
+            "additionalProperties": false,
+            "properties": {
+              "slug": {
+                "description": "Nombre corto de la empresa: va en `empresa` de `consultar`.",
+                "title": "Slug",
+                "type": "string"
+              },
+              "razon_social": {
+                "title": "Razon Social",
+                "type": "string"
+              }
+            },
+            "required": [
+              "slug",
+              "razon_social"
+            ],
+            "title": "EmpresaDeLaCuenta",
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "description": "`total` cuenta la cartera entera si la cuenta es de un aliado; `empresas`, solo la página pedida.",
+        "properties": {
+          "empresas": {
+            "items": {
+              "$ref": "#/$defs/EmpresaDeLaCuenta"
+            },
+            "title": "Empresas",
+            "type": "array"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          },
+          "pagina": {
+            "description": "Con `total` mayor que las de esta página, pida la siguiente.",
+            "title": "Pagina",
+            "type": "integer"
+          },
+          "de_aliado": {
+            "description": "La cuenta es de un aliado y estas son las empresas de su cartera.",
+            "title": "De Aliado",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "empresas",
+          "total",
+          "pagina",
+          "de_aliado"
+        ],
+        "title": "EmpresasDeLaCuenta",
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "leer_guia",
+      "description": "La guía de un módulo: qué se hace, lo legal, sus consultas con su ruta y sus comandos.",
+      "inputSchema": {
+        "properties": {
+          "modulo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Módulo del índice; sin él, solo el índice.",
+            "title": "Modulo"
+          }
+        },
+        "title": "leer_guiaArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "additionalProperties": false,
+        "description": "Siempre el índice; con `modulo`, también su guía: intención, lo legal, consultas y comandos.",
+        "properties": {
+          "indice": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Módulo → título de su guía; `leer_guia` recibe el módulo.",
+            "title": "Indice",
+            "type": "object"
+          },
+          "modulo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Modulo"
+          },
+          "texto": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Texto"
+          }
+        },
+        "required": [
+          "indice"
+        ],
+        "title": "Guias",
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "consultar",
+      "description": "Varias consultas de la guía en un solo llamado, en paralelo; cada una con su estado y su cuerpo.",
+      "inputSchema": {
+        "$defs": {
+          "PedidoDeConsulta": {
+            "additionalProperties": false,
+            "properties": {
+              "empresa": {
+                "maxLength": 100,
+                "pattern": "^[a-z0-9-]+$",
+                "title": "Empresa",
+                "type": "string"
+              },
+              "ruta": {
+                "description": "Ruta bajo /e/{empresa} de una consulta de la guía del módulo, con sus ids, p. ej. `/sedes`.",
+                "maxLength": 500,
+                "pattern": "^(/|(/[A-Za-z0-9_:-][A-Za-z0-9_.:-]*)+)$",
+                "title": "Ruta",
+                "type": "string"
+              },
+              "parametros": {
+                "additionalProperties": {
+                  "maxLength": 200,
+                  "type": "string"
+                },
+                "description": "Parámetros de query que la consulta acepta, según su guía.",
+                "propertyNames": {
+                  "maxLength": 200
+                },
+                "title": "Parametros",
+                "type": "object"
+              }
+            },
+            "required": [
+              "empresa",
+              "ruta"
+            ],
+            "title": "PedidoDeConsulta",
+            "type": "object"
+          }
+        },
+        "properties": {
+          "pedidos": {
+            "items": {
+              "$ref": "#/$defs/PedidoDeConsulta"
+            },
+            "maxItems": 20,
+            "minItems": 1,
+            "title": "Pedidos",
+            "type": "array"
+          }
+        },
+        "required": [
+          "pedidos"
+        ],
+        "title": "consultarArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "$defs": {
+          "JsonValue": {},
+          "PedidoRechazado": {
+            "description": "Por qué un pedido del lote no llegó a la API.",
+            "enum": [
+              "consulta_no_permitida",
+              "guia_desconocida",
+              "accion_desconocida",
+              "parametros_de_la_ruta",
+              "cuerpo_demasiado_grande",
+              "es_legal",
+              "no_es_legal",
+              "sin_pantalla",
+              "no_intentada",
+              "no_es_subida",
+              "importador_desconocido"
+            ],
+            "title": "PedidoRechazado",
+            "type": "string"
+          },
+          "ResultadoDeConsulta": {
+            "additionalProperties": false,
+            "description": "`estado` es el HTTP de la API; un pedido que no llegó a ella dice su `rechazo`.",
+            "properties": {
+              "empresa": {
+                "title": "Empresa",
+                "type": "string"
+              },
+              "ruta": {
+                "title": "Ruta",
+                "type": "string"
+              },
+              "estado": {
+                "title": "Estado",
+                "type": "integer"
+              },
+              "cuerpo": {
+                "$ref": "#/$defs/JsonValue",
+                "default": null
+              },
+              "rechazo": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/PedidoRechazado"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              }
+            },
+            "required": [
+              "empresa",
+              "ruta",
+              "estado"
+            ],
+            "title": "ResultadoDeConsulta",
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "resultados": {
+            "description": "Uno por pedido, en el mismo orden.",
+            "items": {
+              "$ref": "#/$defs/ResultadoDeConsulta"
+            },
+            "title": "Resultados",
+            "type": "array"
+          }
+        },
+        "required": [
+          "resultados"
+        ],
+        "title": "ResultadosDelLote",
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "accion",
+      "description": "Comandos de la guía que agregan o pesan (no legales), en orden; para en el primero que falla.",
+      "inputSchema": {
+        "$defs": {
+          "JsonValue": {},
+          "PedidoDeAccion": {
+            "additionalProperties": false,
+            "properties": {
+              "empresa": {
+                "maxLength": 100,
+                "pattern": "^[a-z0-9-]+$",
+                "title": "Empresa",
+                "type": "string"
+              },
+              "operacion": {
+                "description": "operationId de un comando de la guía del módulo.",
+                "maxLength": 200,
+                "pattern": "^[a-z_]+\\.[a-z0-9_]+$",
+                "title": "Operacion",
+                "type": "string"
+              },
+              "parametros": {
+                "additionalProperties": {
+                  "maxLength": 200,
+                  "type": "string"
+                },
+                "description": "Los de la ruta del comando, por su nombre: `{sede_id}` va en `sede_id`.",
+                "propertyNames": {
+                  "maxLength": 200
+                },
+                "title": "Parametros",
+                "type": "object"
+              },
+              "cuerpo": {
+                "anyOf": [
+                  {
+                    "additionalProperties": {
+                      "$ref": "#/$defs/JsonValue"
+                    },
+                    "type": "object"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "El JSON que la guía da para el comando.",
+                "title": "Cuerpo"
+              }
+            },
+            "required": [
+              "empresa",
+              "operacion"
+            ],
+            "title": "PedidoDeAccion",
+            "type": "object"
+          }
+        },
+        "properties": {
+          "pedidos": {
+            "items": {
+              "$ref": "#/$defs/PedidoDeAccion"
+            },
+            "maxItems": 20,
+            "minItems": 1,
+            "title": "Pedidos",
+            "type": "array"
+          }
+        },
+        "required": [
+          "pedidos"
+        ],
+        "title": "accionArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "$defs": {
+          "JsonValue": {},
+          "PedidoRechazado": {
+            "description": "Por qué un pedido del lote no llegó a la API.",
+            "enum": [
+              "consulta_no_permitida",
+              "guia_desconocida",
+              "accion_desconocida",
+              "parametros_de_la_ruta",
+              "cuerpo_demasiado_grande",
+              "es_legal",
+              "no_es_legal",
+              "sin_pantalla",
+              "no_intentada",
+              "no_es_subida",
+              "importador_desconocido"
+            ],
+            "title": "PedidoRechazado",
+            "type": "string"
+          },
+          "ResultadoDeAccion": {
+            "additionalProperties": false,
+            "description": "`estado` es el HTTP de la API; una acción que no llegó a ella dice su `rechazo`.",
+            "properties": {
+              "operacion": {
+                "title": "Operacion",
+                "type": "string"
+              },
+              "estado": {
+                "title": "Estado",
+                "type": "integer"
+              },
+              "cuerpo": {
+                "$ref": "#/$defs/JsonValue",
+                "default": null
+              },
+              "rechazo": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/PedidoRechazado"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              }
+            },
+            "required": [
+              "operacion",
+              "estado"
+            ],
+            "title": "ResultadoDeAccion",
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "resultados": {
+            "description": "Uno por acción, en el mismo orden.",
+            "items": {
+              "$ref": "#/$defs/ResultadoDeAccion"
+            },
+            "title": "Resultados",
+            "type": "array"
+          },
+          "hechas": {
+            "description": "Las que la API aceptó; tras la primera que falla, las demás no se intentan.",
+            "title": "Hechas",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "resultados",
+          "hechas"
+        ],
+        "title": "ResultadosDeAcciones",
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "acto_legal",
+      "description": "Un acto legal (calificar, firmar, sellar, confirmar): la persona lo aprueba antes en su cliente de Claude.",
+      "inputSchema": {
+        "$defs": {
+          "JsonValue": {},
+          "PedidoDeAccion": {
+            "additionalProperties": false,
+            "properties": {
+              "empresa": {
+                "maxLength": 100,
+                "pattern": "^[a-z0-9-]+$",
+                "title": "Empresa",
+                "type": "string"
+              },
+              "operacion": {
+                "description": "operationId de un comando de la guía del módulo.",
+                "maxLength": 200,
+                "pattern": "^[a-z_]+\\.[a-z0-9_]+$",
+                "title": "Operacion",
+                "type": "string"
+              },
+              "parametros": {
+                "additionalProperties": {
+                  "maxLength": 200,
+                  "type": "string"
+                },
+                "description": "Los de la ruta del comando, por su nombre: `{sede_id}` va en `sede_id`.",
+                "propertyNames": {
+                  "maxLength": 200
+                },
+                "title": "Parametros",
+                "type": "object"
+              },
+              "cuerpo": {
+                "anyOf": [
+                  {
+                    "additionalProperties": {
+                      "$ref": "#/$defs/JsonValue"
+                    },
+                    "type": "object"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "El JSON que la guía da para el comando.",
+                "title": "Cuerpo"
+              }
+            },
+            "required": [
+              "empresa",
+              "operacion"
+            ],
+            "title": "PedidoDeAccion",
+            "type": "object"
+          }
+        },
+        "properties": {
+          "pedido": {
+            "$ref": "#/$defs/PedidoDeAccion"
+          }
+        },
+        "required": [
+          "pedido"
+        ],
+        "title": "acto_legalArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "$defs": {
+          "JsonValue": {},
+          "PedidoRechazado": {
+            "description": "Por qué un pedido del lote no llegó a la API.",
+            "enum": [
+              "consulta_no_permitida",
+              "guia_desconocida",
+              "accion_desconocida",
+              "parametros_de_la_ruta",
+              "cuerpo_demasiado_grande",
+              "es_legal",
+              "no_es_legal",
+              "sin_pantalla",
+              "no_intentada",
+              "no_es_subida",
+              "importador_desconocido"
+            ],
+            "title": "PedidoRechazado",
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "description": "`estado` es el HTTP de la API; una acción que no llegó a ella dice su `rechazo`.",
+        "properties": {
+          "operacion": {
+            "title": "Operacion",
+            "type": "string"
+          },
+          "estado": {
+            "title": "Estado",
+            "type": "integer"
+          },
+          "cuerpo": {
+            "$ref": "#/$defs/JsonValue",
+            "default": null
+          },
+          "rechazo": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/PedidoRechazado"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          }
+        },
+        "required": [
+          "operacion",
+          "estado"
+        ],
+        "title": "ResultadoDeAccion",
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": false
+      },
+      "_meta": {
+        "anthropic/requiresUserInteraction": true
+      }
+    },
+    {
+      "name": "enlace_al_boton",
+      "description": "El enlace a la pantalla de Kairos con el botón del comando, para que la persona lo haga allí.",
+      "inputSchema": {
+        "$defs": {
+          "JsonValue": {},
+          "PedidoDeAccion": {
+            "additionalProperties": false,
+            "properties": {
+              "empresa": {
+                "maxLength": 100,
+                "pattern": "^[a-z0-9-]+$",
+                "title": "Empresa",
+                "type": "string"
+              },
+              "operacion": {
+                "description": "operationId de un comando de la guía del módulo.",
+                "maxLength": 200,
+                "pattern": "^[a-z_]+\\.[a-z0-9_]+$",
+                "title": "Operacion",
+                "type": "string"
+              },
+              "parametros": {
+                "additionalProperties": {
+                  "maxLength": 200,
+                  "type": "string"
+                },
+                "description": "Los de la ruta del comando, por su nombre: `{sede_id}` va en `sede_id`.",
+                "propertyNames": {
+                  "maxLength": 200
+                },
+                "title": "Parametros",
+                "type": "object"
+              },
+              "cuerpo": {
+                "anyOf": [
+                  {
+                    "additionalProperties": {
+                      "$ref": "#/$defs/JsonValue"
+                    },
+                    "type": "object"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "El JSON que la guía da para el comando.",
+                "title": "Cuerpo"
+              }
+            },
+            "required": [
+              "empresa",
+              "operacion"
+            ],
+            "title": "PedidoDeAccion",
+            "type": "object"
+          }
+        },
+        "properties": {
+          "pedido": {
+            "$ref": "#/$defs/PedidoDeAccion"
+          }
+        },
+        "required": [
+          "pedido"
+        ],
+        "title": "enlace_al_botonArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "url": {
+            "description": "La pantalla de Kairos con el botón del comando: la persona lo hace ahí.",
+            "title": "Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "title": "EnlaceAlBoton",
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "subir_archivo",
+      "description": "Firma la subida de un archivo que está en el equipo (Claude Code, Cowork): suba los bytes a la URL que vuelve y use su carga en el comando del destino. En claude.ai web no hay archivo local: lleve a la persona a la pantalla del destino, que tiene su botón de subir.",
+      "inputSchema": {
+        "$defs": {
+          "JsonValue": {}
+        },
+        "properties": {
+          "empresa": {
+            "maxLength": 100,
+            "pattern": "^[a-z0-9-]+$",
+            "title": "Empresa",
+            "type": "string"
+          },
+          "operacion": {
+            "description": "operationId de una ruta `…/subida` de la guía del módulo.",
+            "title": "Operacion",
+            "type": "string"
+          },
+          "cuerpo": {
+            "$ref": "#/$defs/JsonValue",
+            "description": "El de esa subida en la guía: nombre, tipo y tamaño."
+          },
+          "parametros": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "maxLength": 200,
+                  "type": "string"
+                },
+                "propertyNames": {
+                  "maxLength": 200
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Ids de la ruta, si los tiene.",
+            "title": "Parametros"
+          }
+        },
+        "required": [
+          "empresa",
+          "operacion",
+          "cuerpo"
+        ],
+        "title": "subir_archivoArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "$defs": {
+          "JsonValue": {}
+        },
+        "additionalProperties": false,
+        "description": "`estado` es el HTTP de la API y `cuerpo`, su respuesta; un 4xx trae su código en `cuerpo.detail`.",
+        "properties": {
+          "empresa": {
+            "title": "Empresa",
+            "type": "string"
+          },
+          "operacion": {
+            "title": "Operacion",
+            "type": "string"
+          },
+          "estado": {
+            "title": "Estado",
+            "type": "integer"
+          },
+          "cuerpo": {
+            "$ref": "#/$defs/JsonValue",
+            "default": null
+          }
+        },
+        "required": [
+          "empresa",
+          "operacion",
+          "estado"
+        ],
+        "title": "ComandoEjecutado",
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "importar",
+      "description": "Abre la importación del destino con los archivos ya subidos: Kairos los lee y los aplica; siga su avance con `consultar`. Donde hay importador, crear filas sueltas tiene tope: pasado, 422 use_la_importacion.",
+      "inputSchema": {
+        "$defs": {
+          "JsonValue": {}
+        },
+        "properties": {
+          "empresa": {
+            "maxLength": 100,
+            "pattern": "^[a-z0-9-]+$",
+            "title": "Empresa",
+            "type": "string"
+          },
+          "importador": {
+            "description": "El destino que tiene importador.",
+            "enum": [
+              "matriz_legal",
+              "matriz_peligros",
+              "mediciones",
+              "plan_de_trabajo"
+            ],
+            "title": "Importador",
+            "type": "string"
+          },
+          "cuerpo": {
+            "$ref": "#/$defs/JsonValue",
+            "description": "El del comando de importar de la guía: las cargas subidas."
+          }
+        },
+        "required": [
+          "empresa",
+          "importador",
+          "cuerpo"
+        ],
+        "title": "importarArguments",
+        "type": "object"
+      },
+      "outputSchema": {
+        "$defs": {
+          "JsonValue": {}
+        },
+        "additionalProperties": false,
+        "description": "`estado` es el HTTP de la API y `cuerpo`, su respuesta; un 4xx trae su código en `cuerpo.detail`.",
+        "properties": {
+          "empresa": {
+            "title": "Empresa",
+            "type": "string"
+          },
+          "operacion": {
+            "title": "Operacion",
+            "type": "string"
+          },
+          "estado": {
+            "title": "Estado",
+            "type": "integer"
+          },
+          "cuerpo": {
+            "$ref": "#/$defs/JsonValue",
+            "default": null
+          }
+        },
+        "required": [
+          "empresa",
+          "operacion",
+          "estado"
+        ],
+        "title": "ComandoEjecutado",
+        "type": "object"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "openWorldHint": false
+      }
+    }
+  ]
+}

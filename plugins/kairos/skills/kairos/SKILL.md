@@ -25,8 +25,8 @@ módulo viven en Kairos y salen siempre al día por `leer_guia`; esta skill solo
   en su cliente de Claude. Diga antes qué se va a firmar y con qué efecto.
 - Muchas filas (una matriz, un plan, un listado de personas): `subir_archivo` y `importar`, nunca fila por fila.
   Kairos limita las creaciones sueltas donde hay importador y responde `use_la_importacion`.
-- En claude.ai web no hay archivo local: dé a la persona el enlace de `enlace_al_boton` para que lo suba en la
-  pantalla de Kairos.
+- Archivo que no está en este equipo (claude.ai web, o la persona lo tiene en otro lado): dé el enlace de
+  `enlace_al_boton` al comando de importar del destino, para que lo suba en la pantalla de Kairos.
 - Salud por persona (exámenes, conceptos, restricciones) no se lee por aquí: indique a la persona que lo vea en
   Kairos.
 - Un rechazo trae su código: explíquelo en palabras de la persona; no lo reintente sin cambiar el pedido.
